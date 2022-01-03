@@ -1,5 +1,6 @@
 # YouTube Anti Translate
 Source code of [YouTube Anti Translate](https://addons.mozilla.org/en-US/firefox/addon/youtube-anti-translate/?utm_source=github) for Firefox. Forked from https://github.com/zpix1/yt-anti-translate
+
 This fork for Firefox includes a number of Firefox specific fixes, for that YouTube sends a different website HTML to Firefox and Chrome. Also the original idea of injecting the script to run in the page javascript namespace didn't work in Firefox reliably. That is why version 1.5 uses a different mechanism to get to the ytInitialPlayerResponse javascript object on YT. 
 Original text:
 
