@@ -1,6 +1,71 @@
 var mutationIdx = 0;
-const MUTATION_UPDATE_STEP = 3;
+const MUTATION_UPDATE_STEP = 2;
 const FIRST_CHILD_DESC_ID = 'ytantitranslate_desc_div';
+const cache = new Map();
+var registeredMutationObserver = false;
+var showOriginalTitlesRan = false;
+  
+function translateArray(otherVideos){
+    showOriginalTitlesRan = true;
+    console.log("translateArray ran");
+    for (let i = 0; i < otherVideos.length; i++) {
+        let video = otherVideos[i];
+        console.log(video);
+
+        let videoThumbnail = video.querySelector('a#thumbnail');
+
+        let videoId = videoThumbnail.href;
+        let href = video.querySelector('a');
+
+        let originalTitle = video.querySelector("#video-title").title;
+        console.log(originalTitle);
+        //this line overwrites the title, but when the user toggles the state, enables the addon again, untranslateOtherVideos just skips the videos
+        video.querySelector('#video-title').innerText = originalTitle;
+        //SO
+        //video.querySelector('#video-title').style.background = "red";
+        video.untranslatedByExtension = false;
+    }
+}
+
+browser.runtime.onMessage.addListener(message => {
+    console.log(message);
+    console.log(typeof(message));
+    console.error("s", String(message)); //just to make it easy to see in devtools
+    if(message == "Enable"){
+       showOriginalTitlesRan = false;
+       document.getElementById('yt-anti-translate-fake-node').style.display = "";
+       const translatedTitleElement = document.querySelector("h1 > yt-formatted-string");
+       translatedTitleElement.style.display = 'none';
+       if(!registeredMutationObserver){
+            run();
+       }else{
+            untranslateCurrentVideo();
+            untranslateOtherVideos();
+       }
+    }else if(message == "Disable"){
+
+        //show the original heading
+        let translatedTitleElement = document.querySelector("h1 > yt-formatted-string");
+        translatedTitleElement.style.cssText = "visibility:visible;display:inline"; //block
+        translatedTitleElement.style.visibility = 'visible';
+        translatedTitleElement.style.display = 'inline';
+        //set the tab title
+        document.title = translatedTitleElement.innerText;
+
+        //hide the translated title
+        document.getElementById('yt-anti-translate-fake-node').style.display = "none"; 
+        
+        translateArray(document.querySelectorAll('ytd-video-renderer'));
+        translateArray(document.querySelectorAll('ytd-rich-item-renderer'));
+        translateArray(document.querySelectorAll('ytd-compact-video-renderer'));
+        translateArray(document.querySelectorAll('ytd-grid-video-renderer'));
+        translateArray(document.querySelectorAll('ytd-playlist-video-renderer'));
+
+        //experimental
+        translateArray(document.querySelectorAll('ytd-playlist-panel-video-renderer'));
+    }
+});
+
 
 function makeHttpObject() {
     try {return new XMLHttpRequest();}
@@ -17,172 +82,247 @@ function makeLinksClickable(html) {
     return html.replace(/(https?:\/\/[^\s]+)/g, "<a rel='nofollow' target='_blank' dir='auto' class='yt-simple-endpoint style-scope yt-formatted-string' href='$1'>$1</a>");
 }
 
+
 function get(url, callback) {
+    if (cache.has(url)) {
+        callback(cache.get(url));
+        return;
+    }
     var request = makeHttpObject();
     request.open("GET", url, true);
     request.send(null);
-    request.onreadystatechange = function() {
-    if (request.readyState == 4)
-        callback(request);
+    request.onreadystatechange = function () {
+        if (request.readyState == 4) {
+            cache.set(url, request);
+            callback(request);
+        }
     };
 }
 
 function trimYoutube(title) {
     return title.replace(/ - YouTube$/, '');
 }
-function untranslateVideoDescription(ytInitialPlayerResponse){ //code moved from untranslateCurrentVideo
-//Attempt to fix the description is not translated to the original language bug (the video title is translated)
- //in Chrome, window.ytInitialPlayerResponse is defined when the untranslateCurrentVideo runs,
- // in Firefox, not when it runs, leeading to console.log("ytInitialPlayerResponse is undefined")
- // when I paste window.ytInitialPlayerResponse in the Firefox Developer Console, the object is defined and prints out some properties and text
- // thus the consclusion is that for the description to be translated, this function needs to be called later, after the window.ytInitialPlayerResponse object is defined by YouTube
- let translatedDescription = document.querySelector("#description > yt-formatted-string");
-    let realDescription = null;
-    let realTitle = document.querySelector("#container > h1 > yt-formatted-string").textContent; //from untranslateCurrentVideo, right before this function untranslateVideoDescription is called
 
-    // For description, try ytInitialPlayerResponse object Youtube creates whenever you open video page, if it is for this video
-    if (ytInitialPlayerResponse){
-        ytInitialPlayerResponse
-        if (ytInitialPlayerResponse.videoDetails && ytInitialPlayerResponse.videoDetails.title === realTitle) {
-        realDescription = ytInitialPlayerResponse.videoDetails.shortDescription;
-        } else {
-            if (translatedDescription.firstChild.id === FIRST_CHILD_DESC_ID) {
-                translatedDescription.removeChild(translatedDescription.firstChild);
-            }
-        }
+function setTitleNode(text, afterNode) {
+    if (document.getElementById('yt-anti-translate-fake-node')) {
+        const node = document.getElementById('yt-anti-translate-fake-node');
+        node.textContent = text;
+        return;
+    }
 
-        if (realDescription) {
-            var div = document.createElement('div');
-            div.innerHTML = makeLinksClickable(realDescription) + "\n\n<b>TRANSLATED (added by <a class='yt-simple-endpoint style-scope yt-formatted-string' href='https://chrome.google.com/webstore/detail/youtube-anti-translate/ndpmhjnlfkgfalaieeneneenijondgag?hl=ru'>Youtube Anti Translate</a>):</b>\n";
-            div.id = FIRST_CHILD_DESC_ID;
-            translatedDescription.insertBefore(div, translatedDescription.firstChild);
-        }
-            //if window.ytInitialPlayerResponse is defined
-        //clearInterval(Yt_InitialPlayer_Response_Loaded);
-           
-    }else{
-        console.log("ytInitialPlayerResponse is undefined"); //easy debugging and unnoticeable for users
-    } 
-
-
-    
- // 
-
+    const node = document.createElement('span');
+    node.className = 'style-scope ytd-video-primary-info-renderer';
+    node.id = 'yt-anti-translate-fake-node';
+    node.textContent = text;
+    afterNode.after(node);
 }
-var Yt_InitialPlayer_Response_Loaded;
+
 function untranslateCurrentVideo() {
-    let translatedTitleElement = document.querySelector("#container > h1 > yt-formatted-string");
-    let realTitle = null;
+    const translatedTitleElement = document.querySelector("h1 > yt-formatted-string");
 
     // title link approach
     // if (document.querySelector(".ytp-title-link")) {
     //     realTitle = document.querySelector(".ytp-title-link").innerText;
     // } else
     // document title approach
-    if (document.title) {
-        realTitle = trimYoutube(document.title);
-    } else if (document.querySelector('meta[name="title"]')) {
-        realTitle = document.querySelector('meta[name="title"]').content;
-    }
+    // title approach (does not work anymore)
+    // if (document.title) {
+    //     realTitle = trimYoutube(document.title);
+    //     // remove notification counter
+    //     realTitle = realTitle.replace(/^\(\d+\)/, '');
+    // } else 
+    // if (document.querySelector('meta[name="title"]')) {
+    //     realTitle = document.querySelector('meta[name="title"]').content;
+    // }
 
-    if (!realTitle || !translatedTitleElement) {
-        // Do nothing if video is not loaded yet
-        return;
-    }
 
-    if (realTitle === translatedTitleElement.innerText) {
-        // Do not revert already original videos
-        return;
-    }
+    //the first time it took about 1415ms (then 0-1ms (repeated calls because of MutationObserver))
+    console.time("fetching"); 
+    get('https://www.youtube.com/oembed?url=' + document.location.href, function (response) {
+        console.timeEnd("fetching");
+        //response looks like this BTW
+        /*
+       "title":"I found AMAZING loot from FISHING in Minecraft! - Part 23",
+        "author_name":"PewDiePie",
+        "author_url":"https://www.youtube.com/user/PewDiePie",
+        "type":"video",
+        "height":113,
+        "width":200,
+        "version":"1.0",
+        "provider_name":"YouTube",
+        "provider_url":"https://www.youtube.com/",
+        "thumbnail_height":360,
+        "thumbnail_width":480,
+        "thumbnail_url":"https://i.ytimg.com/vi/qpLFWwo7tL0/hqdefault.jpg",
+        "html":"\u003ciframe width=\u0022200\u0022 height=\u0022113\u0022 src=\u0022https://www.youtube.com/embed/qpLFWwo7tL0?feature=oembed\u0022 frameborder=\u00220\u0022 allow=\u0022accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\u0022 allowfullscreen title=\u0022I found AMAZING loot from FISHING in Minecraft! - Part 23\u0022\u003e\u003c/iframe\u003e"
+        */
+        //The first title paramater is used
+        //the last html paramater can be used to construct an actual HTML video thumbnail.
+        //the other info is just info to make a static preview, no video data is sent until you inject iframe encoded int the html parameter 
+       
+        if (response.status !== 200) {
+            return;
+        }
+        
+        const realTitle = JSON.parse(response.responseText).title;
 
-    translatedTitleElement.textContent = realTitle;
+        if (!realTitle || !translatedTitleElement) {
+            // Do nothing if video is not loaded yet
+            return;
+        }
+    
+        document.title = document.title.replace(translatedTitleElement.textContent, realTitle);
 
-    //Yt_InitialPlayer_Response_Loaded = setInterval(untranslateVideoDescription, 1000); for some reason this does not work
-    //aha, I know, CONTENT SCRIPTS DONT HAVE ACCESS TO PAGE VARIABLES! 
-    //https://stackoverflow.com/questions/3955803/chrome-extension-get-page-variables-in-content-script
+        if (realTitle === translatedTitleElement.textContent) {
+            // Do not revert already original videos
+            return;
+        }
 
-    if(document.location.pathname != "/" && !document.location.pathname.startsWith("/channel")){
+        //authors comment: untranslate video by creating its copy
 
-        Yt_InitialPlayer_Response_Loaded = setInterval(function(){
-        let windowData  = new ExtractPageVariable('ytInitialPlayerResponse').data;
-        windowData.then(pageVar => {
-            console.log("pageVar.ytInitialPlayerResponse", pageVar.ytInitialPlayerResponse);
-            console.log("pageVar", pageVar);
-            if(pageVar.ytInitialPlayerResponse){ //window.ytInitialPlayerResponse is defined
-                console.log("pageVar", pageVar.ytInitialPlayerResponse);
-                untranslateVideoDescription(pageVar.ytInitialPlayerResponse);
-                clearInterval(Yt_InitialPlayer_Response_Loaded); //untranslateVideoDescription is synchronous
-            }
-        }, 1000);
-        });
-    }
-   
+        //my comment: basically we're hiding the original title
+        //and calling setTitleNode to create a fake title with the style of the original title string (using the same class name in css)
+        
+        //and the id of yt-anti-translate-fake-node to find it later
+        //(YouTube does not do full reloads, so just replacing the textContent of that fake title string with new titles (I think) )
+        if(!window.showOriginalTitlesRan){
+
+            translatedTitleElement.style.display = 'none';
+            console.log(`[YoutubeAntiTranslate] translated title to "${realTitle}"`);
+            setTitleNode(realTitle, translatedTitleElement);
+
+        }
+        // translatedTitleElement.textContent = realTitle;
+        // translatedTitleElement.removeAttribute('is-empty');
+        // translatedTitleElement.untranslatedByExtension = true;
+    });
+
+    // disabled bugged description untranslation
+    // const translatedDescriptions = [document.querySelector("#description .ytd-video-secondary-info-renderer"), document.getElementById('description-inline-expander')];
+
+    // let realDescription = null;
+
+    // // For description, try ytInitialPlayerResponse object Youtube creates whenever you open video page, if it is for this video
+    // if (!window.ytInitialPlayerResponse) {
+    //     return;
+    // }
+
+    // if (window.ytInitialPlayerResponse.videoDetails && window.ytInitialPlayerResponse.videoDetails.title === realTitle) {
+    //     realDescription = window.ytInitialPlayerResponse.videoDetails.shortDescription;
+    // } else {
+    //     for (const translatedDescription of translatedDescriptions) {
+    //         if (translatedDescription.firstChild.id === FIRST_CHILD_DESC_ID) {
+    //             translatedDescription.removeChild(translatedDescription.firstChild);
+    //         }
+    //     }
+    // }
+
+    // console.log(realDescription, translatedDescriptions);
+
+    // if (realDescription) {
+    //     // for (const translatedDescription of translatedDescriptions) {
+    //     //     const div = document.createElement('div');
+    //     //     div.innerHTML = makeLinksClickable(realDescription) + "\n\n<b>TRANSLATED (added by <a class='yt-simple-endpoint style-scope yt-formatted-string' href='https://chrome.google.com/webstore/detail/youtube-anti-translate/ndpmhjnlfkgfalaieeneneenijondgag?hl=ru'>Youtube Anti Translate</a>):</b>\n";
+    //     //     div.id = FIRST_CHILD_DESC_ID;
+    //     //     translatedDescription.insertBefore(div, translatedDescription.firstChild);
+    //     // }
+    // }
 }
 
 function untranslateOtherVideos() {
-    if(document.location.pathname != "/"){ //the original code of untranslateOtherVideos works everywhere except the YouTube Homepage in Firefox
-        function untranslateArray(otherVideos) {
-       
-            for (let i = 0; i < otherVideos.length; i++) {
-                let video = otherVideos[i];
-                let videoId = video.querySelector('#thumbnail').href;
-                if ((!video.untranslatedByExtension) || (video.untranslatedKey !== videoId)) { // do not request same video multiply times
-                    let href = video.querySelector('a');
-                    video.untranslatedByExtension = true;
-                    video.untranslatedKey = videoId;
-                    get('https://www.youtube.com/oembed?url=' + href.href, function (response) {
-                        const title = JSON.parse(response.responseText).title;
-                        video.querySelector('#video-title').innerText = title;
-                    });
-                }
-            }
-        }
-        let compactVideos = document.getElementsByTagName('ytd-compact-video-renderer');    // related videos
-        let normalVideos = document.getElementsByTagName('ytd-video-renderer');             // channel page videos
-        let gridVideos = document.getElementsByTagName('ytd-grid-video-renderer');          // grid page videos
-        
-        untranslateArray(compactVideos);
-        untranslateArray(normalVideos);
-        untranslateArray(gridVideos);
-    }else{
-        //the YouTUBE homepage code
+    function untranslateArray(otherVideos) {
+        for (let i = 0; i < otherVideos.length; i++) {
+            let video = otherVideos[i];
 
-        function untranslateArray2(otherVideos) {
-            for (let i = 0; i < otherVideos.length; i++) {
-                let video = otherVideos[i];
-                let videoId = video.href; //video is an <a> element, href is the relative path for example "/watch?v=-cABBWfRqms" (like the location.href.pathname) //
-                if ((!video.untranslatedByExtension) || (video.untranslatedKey !== videoId)) { // do not request same video multiply times
-                    let href = video.querySelector('a');
-                    video.untranslatedByExtension = true; //I feel like this should be saved somewhere
-                    video.untranslatedKey = videoId;
-                    get('https://www.youtube.com/oembed?url=' + videoId, function (response) { //href.href
-                        const title = JSON.parse(response.responseText).title;
-                        video.querySelector('#video-title').innerText = title; //interestlingly this part works, it got the original title of a Pewds video
-                    });
-                }
+            // video was deleted
+            if (!video) {
+                return;
             }
-        }
 
-        let compactVideosList = document.getElementsByClassName("yt-simple-endpoint style-scope ytd-rich-grid-media");
-        let compactVideos = [];
-        for(var x = 0; x < compactVideosList.length; x++){
-            if(x % 2 == 1){
-                compactVideos.push(compactVideosList[x]); //the odd <a> elements in compactVideosList are for videos
+            let videoThumbnail = video.querySelector('a#thumbnail');
+
+            // false positive result detected
+            if (!videoThumbnail) {
+                continue;
+            }
+
+            let videoId = videoThumbnail.href;
+
+            if ((!video.untranslatedByExtension) || (video.untranslatedKey !== videoId)) { // do not request same video multiply times
+                let href = video.querySelector('a');
+                //relevant part the markup of in that video element looks like this
+
+                /*
+                <a class="yt-simple-endpoint style-scope ytd-compact-video-renderer" rel="nofollow" href="/watch?v=3Ag0BzLkaD4">
+                <h3 class="style-scope ytd-compact-video-renderer">
+                  <ytd-badge-supported-renderer class="top-badge style-scope ytd-compact-video-renderer" collection-truncate="" disable-upgrade="" hidden="">
+                  </ytd-badge-supported-renderer>
+
+                  <span id="video-title" class="style-scope ytd-compact-video-renderer" aria-label="Я нашел КРАЙ Майнкрафта! Автор: PewDiePie 3 года назад 27 минут 22&nbsp;185&nbsp;726 просмотров" title="Я нашел КРАЙ Майнкрафта!">I found the END of Minecraft! - Part 18</span>
+                
+                </h3>
+                */
+
+                //we get the video URL for the get('https://www.youtube.com/oembed?url=') function to  find the video's right title =  from the <a> element, from its href attribute
+                //to show that to the user, we then modify the <span id="video-title"> element's innerText
+
+                //The title attribute of <span id="video-title"> stays unchanged, we can use that for enabling / disabling the addon 
+
+                video.untranslatedByExtension = true;
+                video.untranslatedKey = videoId;
+                
+                //same method to get video title as in untranslateCurrentVideo
+                //average time for get('https://www.youtube.com/oembed?url=' + href.href) is around 54ms in 23runs
+                console.time("time fetch in otherVideos")
+                get('https://www.youtube.com/oembed?url=' + href.href, function (response) {
+                    if (response.status !== 200) {
+                        return;
+                    }
+                    console.timeEnd("time fetch in otherVideos")
+                    const title = JSON.parse(response.responseText).title;
+                    const titleElement = video.querySelector('#video-title');
+                    if (title !== titleElement.innerText) {
+                        console.log(`[YoutubeAntiTranslate] translated from "${titleElement.innerText}" to "${title}"`);
+                        if (titleElement) {
+                            video.querySelector('#video-title').innerText = title;
+                        }
+                    }
+                });
             }
         }
-        untranslateArray2(compactVideos);
     }
+
+    untranslateArray(document.querySelectorAll('ytd-video-renderer'));
+    untranslateArray(document.querySelectorAll('ytd-rich-item-renderer'));
+    untranslateArray(document.querySelectorAll('ytd-compact-video-renderer'));
+    untranslateArray(document.querySelectorAll('ytd-grid-video-renderer'));
+    untranslateArray(document.querySelectorAll('ytd-playlist-video-renderer'));
+
+    //experimental
+    untranslateArray(document.querySelectorAll('ytd-playlist-panel-video-renderer'));
+
+
+    // let compactVideos = document.getElementsByTagName('ytd-compact-video-renderer');    // related videos
+    // let normalVideos = document.getElementsByTagName('ytd-video-renderer');             // channel page videos
+    // let gridVideos = document.getElementsByTagName('ytd-grid-video-renderer');          // grid page videos
+    
+    // untranslateArray(compactVideos);
+    // untranslateArray(normalVideos);
+    // untranslateArray(gridVideos);
 }
 
 function untranslate() {
-    if (mutationIdx % MUTATION_UPDATE_STEP == 0) {
-        untranslateCurrentVideo();
-        untranslateOtherVideos();
+    if(!showOriginalTitlesRan){
+        if (mutationIdx % MUTATION_UPDATE_STEP == 0) {
+            untranslateCurrentVideo();
+            untranslateOtherVideos();
+        }
+        mutationIdx++;
     }
-    mutationIdx++;
 }
 
 function run() {
+    registeredMutationObserver = true
     // Change current video title and description
     // Using MutationObserver as we can't exactly know the moment when YT js will load video title
     let target = document.body;
@@ -191,85 +331,9 @@ function run() {
     observer.observe(target, config);
     // setInterval(untranslate, 100);
 }
-chrome.storage.sync.get({
-    disabled: false
-}, function (items) {
-    if (!items.disabled) {
-        // I moved the code from start.js for the following reasons:
-
-        // the start.js (1.4.8 addon release) file did not inject the background.js reliably (tested in Firefox Nightly 97) (I saw the start.js in debugger, but the background js file did not appear to be running (translating video titles) on Youtube, 
-        //interestingly, when I pasted the version 1.4.8 background js code in the Firefox developer console, it worked)
-        //this way (making backround.js a content script, not injecting it programatically) actually works, but https://stackoverflow.com/questions/3955803/chrome-extension-get-page-variables-in-content-script
-
-
-        // here so the script is defined on all YT pages, where it can the run after the user clicks the button, without reloading the page
-        //when this runs (this is the same code which was in start.js, but there the background.js script was injected in the page),
-        //the code is ran the same way, as the run() statement was previously called right after the script was loaded (it was outside function defintions)
-        //even though the run() function checks for the video title being loaded it doesn't check for the window.ytInitialPlayerResponse object to be defined,
-        //thus causing the translated video descriptions with original video titles in Firefox
-        run(); 
+browser.storage.sync.get().then(data =>{
+    console.log(data.disabled)
+    if(data.disabled == undefined || data.disabled == false){ //data.disabled !== undefined && data.disabled == false
+      run();
     }
 });
-
-browser.runtime.onMessage.addListener((message => {
-    console.log(message);
-    console.log(typeof(message));
-    console.log("s", String(message));
-    if(message == "Enable"){ //message.greeting
-        
-       untranslateCurrentVideo();
-       untranslateOtherVideos();
-    }
-}));
-
-class ExtractPageVariable { //https://stackoverflow.com/questions/3955803/chrome-extension-get-page-variables-in-content-script
-  constructor(variableName) {
-    this._variableName = variableName;
-    this._handShake = this._generateHandshake();
-    this._inject();
-    this._data = this._listen();
-  }
-
-  get data() {
-    return this._data;
-  }
-
-  // Private
-
-  _generateHandshake() {
-    const array = new Uint32Array(5);
-    return window.crypto.getRandomValues(array).toString();
-  }
-
-  _inject() {
-    function propagateVariable(handShake, variableName) {
-      const message = { handShake };
-      message[variableName] = window[variableName];
-      window.postMessage(message, "*");
-    }
-
-    const script = `( ${propagateVariable.toString()} )('${this._handShake}', '${this._variableName}');`
-    const scriptTag = document.createElement('script');
-    const scriptBody = document.createTextNode(script);
-
-    scriptTag.id = 'chromeExtensionDataPropagator';
-    scriptTag.appendChild(scriptBody);
-    document.body.append(scriptTag);
-  }
-
-  _listen() {
-    return new Promise(resolve => {
-      window.addEventListener("message", ({data}) => {
-        // We only accept messages from ourselves
-        if (data.handShake != this._handShake) return;
-        resolve(data);
-      }, false);
-    })
-  }
-}
-
-// const windowData = new ExtractPageVariable('somePageVariable').data;
-// windowData.then(console.log);
-// windowData.then(data => {
-//    // Do work here
-// });
