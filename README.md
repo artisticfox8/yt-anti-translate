@@ -44,6 +44,17 @@ Below, hidden, there is the element YT Anti Translate edits, and fetches the ori
 
 We can also see there is a timing (?) bug between two extensions, as when I load the page, with YT Anti translate on and DeArrow fully on, there remains the translated in Russian title. Alternatively (would need investigation) it could be that DeArrow looks in the `title` attribute of the `<span id="video-title">` element, which is the Russian title (intentionally) and not its `innerText`, which is the English title. 
 
-Furthermore, if the YT Anti Translate was disabled and DeArrow enabled when page is loaded, the DeArrow's "Show original details" button which appears on hover, switches between formatted and unformatted versions of the Russian title. If then YT Anti Translate is reenabled (and English title fetched), the Russian title is hidden and the English title viewed only after the DeArrow's "Show original details" button is clicked. Further clicks alternate between unformatted and formatted versions of the English titles. That means that turning YT Anti Translate after DeArrow ran its scripts does not change the *visible* title of the video. 
+Furthermore, if the YT Anti Translate is off and DeArrow is on when page is loaded, the DeArrow's "Show original details" button which appears on hover, switches between formatted and unformatted versions of the Russian title. If then YT Anti Translate is reenabled (and English title fetched), the Russian title is hidden and the English title viewed only after the DeArrow's "Show original details" button is clicked. Further clicks alternate between unformatted and formatted versions of the English titles. That means that turning YT Anti Translate after DeArrow ran its scripts does not change the *visible* title of the video. 
+
+Third case (to have it complete here), if YT Anti Translate is on and DeArrow off when page is loaded, the relevant markup looks like this:
+(Off/on from their popups (not from about:addons), that's why DeArrow still injected a hidden element.)
+![image](https://github.com/user-attachments/assets/4f1a224d-dc51-483d-a76b-d2682dac4f97)
+
+If then DeArrow is turned on, and its "Show original details" button pressed, it toggles formatted/unformatted English titles normally (not reverting to the Russian title).
+So, this may be a timing bug. If DeArrow runs after YT Anti Translate has run, all this appears correctly.
+![image](https://github.com/user-attachments/assets/3b360d44-f8c6-4160-b6a1-4c534b5b71d2)
+![image](https://github.com/user-attachments/assets/501a5ff6-5dc1-4c29-8bab-41f6bf0cff2a)
+
+
 
 The page in question: https://www.youtube.com/watch?v=w26hmoyLbJ0 (old Pewdiepie video, which the https://www.youtube.com/watch?v=EC7gdOUvsAc video in screenshot appears as a recommendation to) and YT language changed to Russian (same config as original author of the Chrome extension). Good combination for testing, as his videos from 2018-19 mostly all have a translated title.
