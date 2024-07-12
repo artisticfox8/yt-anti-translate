@@ -162,10 +162,15 @@ function replaceAll(newTitle) {
 
     const translatedTitleElement = document.querySelector(selector);
 
-    document.title = document.title.replace(
-        translatedTitleElement.textContent,
-        newTitle
-    );
+    /*Now even if this did run more times on one page, (
+    it shouldn't = there are URL change checks in untranslateCurrentVideo))
+    the title should still stay short
+    */
+    document.title = `${newTitle} - YouTube`;
+    // document.title = document.title.replace(
+    //     translatedTitleElement.textContent,
+    //     newTitle
+    // );
 
     if (newTitle === translatedTitleElement.textContent) {
         // Do not revert already original videos
