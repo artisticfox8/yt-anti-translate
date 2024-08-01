@@ -245,9 +245,6 @@ function untranslateCurrentVideo(statusObject = null) {
         );
         return;
     }
-
-    const realTitle = statusObject["realTitle"];
-    replaceAll(realTitle);
 }
 //Example page https://www.youtube.com/@BeastReacts
 function untranslateChannelViewMainVideo(){
