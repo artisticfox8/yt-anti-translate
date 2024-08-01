@@ -58,3 +58,5 @@ So, this may be a timing bug. If DeArrow runs after YT Anti Translate has run, a
 
 
 The page in question: https://www.youtube.com/watch?v=w26hmoyLbJ0 (old Pewdiepie video, which the https://www.youtube.com/watch?v=EC7gdOUvsAc video in screenshot appears as a recommendation to) and YT language changed to Russian (same config as original author of the Chrome extension). Good combination for testing, as his videos from 2018-19 mostly all have a translated title.
+
+Tested with the [experimental](https://github.com/artisticfox8/yt-anti-translate/tree/experimental) branch.
