@@ -7,7 +7,9 @@ var registeredMutationObserver = false;
 var showOriginalTitlesRan = false;
 //if the title and translated title are the same, this will be set to false, and the original title will be shown
 let fakeTitleNeedsShowing = false;
-const selector = "h1.ytd-watch-metadata > yt-formatted-string";
+// :not(.cbCustomTitle) for compatitibility with DeArrow
+//TODO: dodelat support pro DeArrow (pridat to :not(.cbCustomTitle) do funkci co jsem do forku pridal sam)
+const selector = "h1.ytd-watch-metadata > yt-formatted-string:not(.cbCustomTitle)";
   
 function translateArray(otherVideos) {
     showOriginalTitlesRan = true;
@@ -21,11 +23,14 @@ function translateArray(otherVideos) {
         let videoId = videoThumbnail.href;
         let href = video.querySelector("a");
 
-        let originalTitle = video.querySelector("#video-title").title;
-        console.log(originalTitle);
-        //this line overwrites the title, but when the user toggles the state, enables the addon again, untranslateOtherVideos just skips the videos
-        video.querySelector("#video-title").innerText = originalTitle;
-        video.untranslatedByExtension = false;
+        let originalTitleElement = video.querySelector("#video-title:not(.cbCustomTitle)");
+        if (originalTitleElement) {
+            let originalTitle = originalTitleElement.title;
+            console.log(originalTitle);
+            //this line overwrites the title, but when the user toggles the state, enables the addon again, untranslateOtherVideos just skips the videos
+            video.querySelector("#video-title:not(.cbCustomTitle)").innerText = originalTitle;
+            video.untranslatedByExtension = false;
+        }
     }
 }
 
@@ -133,6 +138,11 @@ function setFakeTitleNode(text, afterNode) {
 }
 
 function makeFakeTitleNodeVisible() {
+    //DeArrow extension replaced the title
+    if (document.querySelector("h1.ytd-watch-metadata > .cbCustomTitle")){
+        console.error("brrrrrrrrrrrrrrr")
+        return;
+    }
     //show our untranslated title
     console.log("[YoutubeAntiTranslate] making yt-anti-translate-fake-node visible")
     const fakeTitle = document.getElementById("yt-anti-translate-fake-node");
@@ -348,14 +358,20 @@ function untranslateOtherVideos() {
                         console.timeEnd("time fetch in otherVideos");
                         const title = JSON.parse(response.responseText).title;
                         const titleElement = 
-                            video.querySelector("#video-title");
+                            video.querySelector("#video-title:not(.cbCustomTitle)");
                         if (title !== titleElement.innerText) {
                             console.log(
                                 `[YoutubeAntiTranslate] translated from "${titleElement.innerText}" to "${title}"`
                             );
                             if (titleElement) {
-                                video.querySelector("#video-title").innerText =
+                                video.querySelector("#video-title:not(.cbCustomTitle)").innerText =
                                     title;
+                            }
+
+                            if (video.querySelector("a#video-title-link:not(.cbCustomTitle)") ) {
+                                // home page
+                                video.querySelector("a#video-title-link:not(.cbCustomTitle)").title = 
+                                    title;          
                             }
                         }
                     }
