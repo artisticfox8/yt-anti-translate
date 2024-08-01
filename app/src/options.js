@@ -1,6 +1,4 @@
 function saveOptions() {
-    
-
     chrome.storage.sync.get({
         disabled: false
     }, function (items) {
@@ -28,7 +26,7 @@ function tellThePage(){
 
         for (var x = 0; x < tabs.length; x++) {
             //sending a message to content script https://stackoverflow.com/questions/14245334/sendmessage-from-extension-background-or-popup-to-content-script-doesnt-work
-            browser.tabs.sendMessage(tabs[x].id, message)
+            browser.tabs.sendMessage(tabs[x].id, message) //{ greeting: greeting}
             .then(response => { 
               console.log("Message from the content script:",response);
 
