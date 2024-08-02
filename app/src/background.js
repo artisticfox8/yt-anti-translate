@@ -256,9 +256,34 @@ function untranslateCurrentVideo(statusObject = null) {
     replaceAll(realTitle);
 }
 
+function count(char, string){
+    let count = 0;
+    for (let x = 0; x < string.length; x++) {
+        if (string[x] == char) {
+            count++;
+        }
+    }
+    return count;
+}
+
+//viewing a channel, Home tab is selected
+function isChannelViewHome(){
+    let url = document.location.pathname;
+    //   /@BeastReacts/featured     /channel/UCq3Wpi10SyZkzVeS7vzB5Lw
+    if (url.endsWith("featured") || url.startsWith("/channel")) {
+        return true;
+    }
+    //   /@BeastReacts or /@BeastReacts/
+    if (url.includes("/@") && (count("/", url) == 1 || // /@BeastReacts
+       (count("/", url) == 2 && url.startsWith("/") && url.endsWith("/")) )) { // /@BeastReacts/
+        return true;
+    }
+    return false;
+}
+
 //Example page https://www.youtube.com/@BeastReacts
 function untranslateChannelViewMainVideo(){
-    if (["/watch", "/"].includes(document.location.pathname)) {
+    if (!isChannelViewHome()){
         return;
     }
     let link = document.querySelector("ytd-channel-video-player-renderer").querySelector("yt-formatted-string#title>a"); //title next to video
@@ -285,7 +310,7 @@ function untranslateChannelViewMainVideo(){
 }
 
 function translateChannelViewMainVideo(){
-    if (["/watch", "/"].includes(document.location.pathname)) {
+    if (!isChannelViewHome()){
         return;
     }
     let originalTitle =  document.querySelector("ytd-channel-video-player-renderer").querySelector("yt-formatted-string#title").title 
