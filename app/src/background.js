@@ -121,6 +121,7 @@ and the original title element is shown.  */
 function setFakeTitleNode(text, afterNode) {
     const existingNode = document.getElementById("yt-anti-translate-fake-node");
     if (existingNode) {
+        console.log("setFakeTitleNode")
         existingNode.textContent = text;
         return;
     }
@@ -150,11 +151,12 @@ function hideFakeTitleNode() {
     const fakeTitle = document.getElementById("yt-anti-translate-fake-node");
     //if we didn't check, there would be an error when accessing style
     if (fakeTitle) { 
-        fakeTitle.style.display = "none"; //unsets display none
+        fakeTitle.style.display = "none"; //sets display none
     }
 }
 
 function replaceAll(newTitle) {
+    //console.log("replaceAll called")
     if (!newTitle) {
         // Do nothing if video is not loaded yet
         return;
@@ -200,7 +202,12 @@ function replaceAll(newTitle) {
     }
 }
 
+//made to be called for the main video on a /watch page
 function untranslateCurrentVideo(statusObject = null) {
+    console.log("[YoutubeAntiTranslate] statusObject", statusObject);
+    if (document.location.pathname != "/watch") {
+        return;
+    }
     if (statusObject == null) {
         console.log("[YoutubeAntiTranslate] no context object");
         return;
@@ -245,7 +252,10 @@ function untranslateCurrentVideo(statusObject = null) {
         );
         return;
     }
+    const realTitle = statusObject["realTitle"];
+    replaceAll(realTitle);
 }
+
 //Example page https://www.youtube.com/@BeastReacts
 function untranslateChannelViewMainVideo(){
     if (["/watch", "/"].includes(document.location.pathname)) {
@@ -383,8 +393,11 @@ function untranslateOtherVideos() {
 }
 
 function untranslate(statusObject) {
+    //console.log("untranslate")
     if (!showOriginalTitlesRan) {
+        //console.log("untranslate inside", mutationIdx, MUTATION_UPDATE_STEP);
         if (mutationIdx % MUTATION_UPDATE_STEP == 0) {
+            //console.log("actually ran");
             untranslateCurrentVideo(statusObject);
             untranslateOtherVideos();
         }
@@ -409,7 +422,9 @@ function run(activatedFromPopup) {
     //currying function to pass a function with a parameter to MutationObserver 
     function makeFunc() {
         const statusObject = {};
-        function baka() {
+        function baka() { // baka(changesFromMutationObserver)
+            //console.log("changes log", changesFromMutationObserver);
+            //console.log("statusObject log from baka", statusObject);
             untranslate(statusObject);
         }
         return baka;
