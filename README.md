@@ -16,9 +16,15 @@ This fork for Firefox used to include a number of Firefox specific fixes in vers
 
 ## Original text:
 
-I was annoyed by YouTube changing video titles to poorly user-translated versions, so I made this chrome extension to retrive original titles and change them back.
+I was annoyed by YouTube changing video titles to poorly user-translated versions, so I made this chrome extension to retrieve original titles and change them back.
 
-It is much easier to use than it's analogs (as [YoutubeAutotranslateCanceler](https://github.com/pcouy/YoutubeAutotranslateCanceler), because it does not require any YouTube API keys or addition userscript extensions).
+It is much easier to use than its analogs (such as [YoutubeAutotranslateCanceler](https://github.com/pcouy/YoutubeAutotranslateCanceler)), because it does not require any YouTube API keys or additional userscript extensions.
+
+## Features
+
+- Restores original video titles on YouTube (Title Anti-Translation)
+- Disables automatic audio translation (can be toggled in settings)
+- Works automatically without any configuration
 
 ## How to use
 Just install it from firefox extensions store (https://addons.mozilla.org/en-US/firefox/addon/youtube-anti-translate/?utm_source=github).
