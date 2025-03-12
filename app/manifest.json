@@ -20,5 +20,10 @@
   "host_permissions": ["*://*.youtube.com/*"],
   "icons": {
     "48": "icon48.png"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{1869cf16-2ba5-c82e-ef9b-1508a93857c6}" 
+    }
   }
 }
