@@ -97,6 +97,16 @@ function saveOptions() {
     },
   );
 }
+
+/*
+Toggle the addon on/off without reloading the page.
+The content scripts should be listening
+  => if the addon is toggled off, translateArray ran in the content scripts
+  => it relied on the fact that the `title` HTML attribute
+    (which appears with the hover tooltip btw) was not changed by YT-Anti-Translate
+    => Now, it is changed
+  => So, to make it work again, set a custom data attribute to recover original (translated) titles
+*/
 function tellThePage(){
     let message;
     if(document.getElementById('status').innerText == "Enabled"){ //The value is set correctly
