@@ -47,9 +47,8 @@ function renderFooterLinks() {
 
   if (window.YoutubeAntiTranslate.isFirefoxBasedBrowser()) {
     footer.innerHTML = `
-      <a target="_blank" href="https://addons.mozilla.org/firefox/addon/youtube-anti-translate-mv3/">Rate extension</a> • 
-      ${commonLinks} • 
-      <a target="_blank" href="https://github.com/sponsors/namakeingo">Support developer</a>
+      <a target="_blank" href="https://addons.mozilla.org/firefox/addon/youtube-anti-translate/">Rate extension</a> • 
+      ${commonLinks}
     `;
   } else {
     footer.innerHTML = `
