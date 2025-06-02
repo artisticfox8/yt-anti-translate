@@ -1,13 +1,17 @@
 {
   "name": "yt-anti-translate",
   "version": "1.0.0",
-  "description": "Source code of [YouTube Anti Translate](https://chrome.google.com/webstore/detail/yt-anti-translate/ndpmhjnlfkgfalaieeneneenijondgag).",
+  "description": "Source code of [Chromium - YouTube Anti Translate](https://chrome.google.com/webstore/detail/yt-anti-translate/ndpmhjnlfkgfalaieeneneenijondgag) and [Firfox - YouTube Anti Translate - mv3](https://addons.mozilla.org/firefox/addon/youtube-anti-translate-mv3/).",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",
-    "test:headed": "playwright test --headed"
+    "test:headed": "playwright test --headed",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\""
   },
   "repository": {
     "type": "git",
@@ -21,7 +25,20 @@
   },
   "homepage": "https://github.com/zpix1/yt-anti-translate#readme",
   "devDependencies": {
-    "@playwright/test": "^1.51.0",
-    "@types/node": "^22.13.9"
+    "@eslint/js": "^9.28.0",
+    "@playwright/test": "^1.52.0",
+    "@types/node": "^22.13.9",
+    "crx-util": "^1.0.0",
+    "dotenv": "^16.5.0",
+    "eslint": "^9.28.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.4.1",
+    "otpauth": "^9.4.0",
+    "playwright-webextext": "^0.0.4",
+    "prettier": "^3.5.3",
+    "tslib": "^2.8.1",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.33.0",
+    "unzipper": "^0.12.3"
   }
 }

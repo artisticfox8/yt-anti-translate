@@ -1,3 +1,65 @@
+async function hasPermanentHostPermission(origin) {
+  return new Promise((resolve, reject) => {
+    window.YoutubeAntiTranslate.getBrowserOrChrome().permissions.getAll(
+      (allPermissions) => {
+        if (chrome.runtime.lastError) {
+          reject(chrome.runtime.lastError);
+        } else {
+          resolve(allPermissions.origins?.includes(origin));
+        }
+      },
+    );
+  });
+}
+
+async function checkPermissions() {
+  const permissionWarning = document.getElementById("permission-warning");
+
+  if (!permissionWarning) {
+    window.YoutubeAntiTranslate.logInfo("Permission elements not found in DOM");
+    return;
+  }
+
+  const hasPermanent = await hasPermanentHostPermission("*://*.youtube.com/*");
+
+  if (!hasPermanent) {
+    permissionWarning.style.display = "block";
+  }
+}
+
+function requestPermissions() {
+  chrome.tabs.create({
+    url: chrome.runtime.getURL("pages/permission.html"),
+  });
+  window.close();
+}
+
+function renderFooterLinks() {
+  const footer = document.getElementById("footer-links");
+
+  if (!footer) {
+    return;
+  }
+
+  const commonLinks = `
+    <a target="_blank" href="https://github.com/zpix1/yt-anti-translate">Report issues</a>
+  `;
+
+  if (window.YoutubeAntiTranslate.isFirefoxBasedBrowser()) {
+    footer.innerHTML = `
+      <a target="_blank" href="https://addons.mozilla.org/firefox/addon/youtube-anti-translate-mv3/">Rate extension</a> • 
+      ${commonLinks} • 
+      <a target="_blank" href="https://github.com/sponsors/namakeingo">Support developer</a>
+    `;
+  } else {
+    footer.innerHTML = `
+      <a target="_blank" href="https://chrome.google.com/webstore/detail/yt-anti-translate/ndpmhjnlfkgfalaieeneneenijondgag">Rate extension</a> • 
+      ${commonLinks} • 
+      <a target="_blank" href="https://zpix1.github.io/donate/">Support developer</a>
+    `;
+  }
+}
+
 function saveOptions() {
     
 
@@ -10,9 +72,11 @@ function saveOptions() {
       autoreloadOption: true,
       untranslateAudio: true,
       untranslateDescription: true,
+      untranslateChannelBranding: true,
+      youtubeDataApiKey: null,
     },
     function (items) {
-      let disabled = !items.disabled;
+      const disabled = !items.disabled;
       chrome.storage.sync.set(
         {
           disabled: disabled,
@@ -29,11 +93,9 @@ function saveOptions() {
           document.getElementById("disable-button").className = disabled
             ? "disabled"
             : "enabled";
-            // tellThePage();
-
-        }
+        },
       );
-    }
+    },
   );
 }
 function tellThePage(){
@@ -66,6 +128,8 @@ function loadOptions() {
       autoreloadOption: true,
       untranslateAudio: true,
       untranslateDescription: true,
+      untranslateChannelBranding: true,
+      youtubeDataApiKey: null,
     },
     function (items) {
       document.getElementById("disable-button").innerText = items.disabled
@@ -85,7 +149,10 @@ function loadOptions() {
         items.untranslateAudio;
       document.getElementById("description-checkbox").checked =
         items.untranslateDescription;
-    }
+      document.getElementById("channel-branding-checkbox").checked =
+        items.untranslateChannelBranding;
+      document.getElementById("api-key-input").value = items.youtubeDataApiKey;
+    },
   );
 }
 
@@ -95,10 +162,52 @@ function checkboxUpdate() {
     untranslateAudio: document.getElementById("audio-checkbox").checked,
     untranslateDescription: document.getElementById("description-checkbox")
       .checked,
+    untranslateChannelBranding: document.getElementById(
+      "channel-branding-checkbox",
+    ).checked,
   });
 }
 
+function apiKeyUpdate() {
+  const newApiKey = document.getElementById("api-key-input").value.trim();
+  const saveButton = document.getElementById("save-api-key-button");
+  const saveButtonText = document.getElementById("save-api-key-text");
+
+  chrome.storage.sync.get(
+    {
+      youtubeDataApiKey: null,
+    },
+    function (items) {
+      if (items.youtubeDataApiKey === newApiKey) {
+        return;
+      }
+
+      chrome.storage.sync.set(
+        {
+          youtubeDataApiKey: newApiKey,
+        },
+        () => {
+          window.YoutubeAntiTranslate.logInfo("API key saved");
+        },
+      );
+    },
+  );
+
+  const originalText = saveButtonText.textContent;
+  saveButtonText.classList.add("saving");
+  saveButtonText.textContent = "Saved!";
+  saveButton.disabled = true;
+  setTimeout(() => {
+    saveButtonText.textContent = originalText;
+    saveButton.disabled = false;
+    saveButtonText.classList.remove("saving");
+  }, 1500);
+}
+
 function addListeners() {
+  document
+    .getElementById("request-permission-button")
+    .addEventListener("click", requestPermissions);
   document
     .getElementById("disable-button")
     .addEventListener("click", saveOptions);
@@ -111,7 +220,15 @@ function addListeners() {
   document
     .getElementById("description-checkbox")
     .addEventListener("click", checkboxUpdate);
+  document
+    .getElementById("channel-branding-checkbox")
+    .addEventListener("click", checkboxUpdate);
+  document
+    .getElementById("save-api-key-button")
+    .addEventListener("click", apiKeyUpdate);
 }
 
+document.addEventListener("DOMContentLoaded", renderFooterLinks);
+document.addEventListener("DOMContentLoaded", checkPermissions);
 document.addEventListener("DOMContentLoaded", loadOptions);
 document.addEventListener("DOMContentLoaded", addListeners);

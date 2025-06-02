@@ -16,15 +16,27 @@ This fork for Firefox used to include a number of Firefox specific fixes in vers
 
 ## Original text:
 
-I was annoyed by YouTube changing video titles to poorly user-translated versions, so I made this chrome extension to retrieve original titles and change them back.
+All the people involved were annoyed by YouTube changing video titles to poorly user-translated versions. While it might be useful if you do not know the language, it quickly becomes annoying once you do.
+As there is no option provided by YouTube to disable it, we made this extension to retrieve original titles and change them back.
+As YouTube later got even more annoying with translated descriptions, audio (dubbing) and channel branding, the extension was expanded to untranslate that too.
 
-It is much easier to use than its analogs (such as [YoutubeAutotranslateCanceler](https://github.com/pcouy/YoutubeAutotranslateCanceler)), because it does not require any YouTube API keys or additional userscript extensions.
+It is much easier to use than its analogues (such as [YoutubeAutotranslateCanceler](https://github.com/pcouy/YoutubeAutotranslateCanceler)), because it does not require any YouTube API keys (for core features) or additional userscript extensions.
 
 ## Features
 
 - Restores original video titles on YouTube (Title Anti-Translation)
-- Disables automatic audio translation (can be toggled in settings)
+- Restores original video descriptions on YouTube (can be toggled in settings "Untranslate description")
+- Disables automatic audio (dubbing) translation (can be toggled in settings "Untranslate audio track")
+- Restores original channel branding header and about on YouTube (can be toggled in settings "Untranslate channel branding")
+- Untranslates YouTube Shorts audio and titles
 - Works automatically without any configuration
+
+### Enhanced Features Reliability Option
+
+In the extension settings, you can optionally provide a YouTube Data API Key. Although this is optional, it is reccomended.
+
+When that is populated, some features work more reliably.
+[Read more on how to obtain](https://github.com/zpix1/yt-anti-translate/blob/main/YOUTUBE_DATA_API_KEY.md)
 
 ## How to use
 Just install it from firefox extensions store (https://addons.mozilla.org/en-US/firefox/addon/youtube-anti-translate/?utm_source=github).

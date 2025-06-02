@@ -1,26 +1,34 @@
 const ORIGINAL_TRANSLATIONS = [
-  "original", // English
-  "оригинал", // Russian
-  "オリジナル", // Japanese
-  "原始", // Chinese
-  "원본", // Korean
-  "origineel", // Dutch
-  "original", // Spanish/Portuguese
-  "originale", // Italian/French
-  "original", // German
-  "oryginał", // Polish
-  "původní", // Czech
-  "αρχικό", // Greek
-  "orijinal", // Turkish
-  "原創", // Traditional Chinese
-  "gốc", // Vietnamese
-  "asli", // Indonesian
-  "מקורי", // Hebrew
-  "أصلي", // Arabic
+  "original", // English (en)
+  "оригинал", // Russian (ru_RU)
+  "オリジナル", // Japanese (ja_JP)
+  "原始", // Chinese Simplified (zh_CN)
+  "원본", // Korean (ko_KR)
+  "origineel", // Dutch (nl_NL)
+  "original", // Spanish (es_ES) / Portuguese (pt_BR)
+  "originale", // Italian (it_IT) / French (fr_FR)
+  "original", // German (de_DE)
+  "oryginał", // Polish (pl_PL)
+  "původní", // Czech (cs_CZ)
+  "αρχικό", // Greek (el_GR)
+  "orijinal", // Turkish (tr_TR)
+  "原創", // Traditional Chinese (zh_TW)
+  "gốc", // Vietnamese (vi_VN)
+  "asli", // Indonesian (id_ID)
+  "מקורי", // Hebrew (he_IL)
+  "أصلي", // Arabic (ar_EG)
+  "मूल", // Hindi (hi_IN)
+  "मूळ", // Marathi (mr_IN)
+  "ਪ੍ਰਮਾਣਿਕ", // Punjabi (pa_IN)
+  "అసలు", // Telugu (te_IN)
+  "மூலம்", // Tamil (ta_IN)
+  "মূল", // Bengali (bn_BD)
+  "അസലി", // Malayalam (ml_IN)
+  "ต้นฉบับ", // Thai (th_TH)
 ];
 
 let mutationIdx = 0;
-const MUTATION_UPDATE_STEP = 2;
+const MUTATION_UPDATE_STEP = 5;
 
 function getOriginalTrack(tracks) {
   if (!tracks || !Array.isArray(tracks)) {
@@ -29,7 +37,9 @@ function getOriginalTrack(tracks) {
 
   let languageFieldName = null;
   for (const track of tracks) {
-    if (!track || typeof track !== "object") continue;
+    if (!track || typeof track !== "object") {
+      continue;
+    }
 
     for (const [fieldName, field] of Object.entries(track)) {
       if (field && typeof field === "object" && field.name) {
@@ -37,45 +47,75 @@ function getOriginalTrack(tracks) {
         break;
       }
     }
-    if (languageFieldName) break;
+    if (languageFieldName) {
+      break;
+    }
   }
 
   if (!languageFieldName) {
     return;
   }
-
   for (const track of tracks) {
-    if (!track || !track[languageFieldName] || !track[languageFieldName].name)
+    if (!track || !track[languageFieldName] || !track[languageFieldName].name) {
       continue;
+    }
 
     const trackName = track[languageFieldName].name.toLowerCase();
     for (const originalWord of ORIGINAL_TRANSLATIONS) {
       if (trackName.includes(originalWord.toLowerCase())) {
+        window.YoutubeAntiTranslate.logInfo(
+          `setting original audio track as ${trackName} with id ${track.id}`,
+        );
         return track;
       }
     }
   }
 }
 
-function untranslateAudioTrack() {
-  const player = document.querySelector("#movie_player");
-  if (!player || !player.getAvailableAudioTracks || player.audioUntranslated) {
+async function untranslateAudioTrack() {
+  const player = window.YoutubeAntiTranslate.getFirstVisible(
+    document.querySelectorAll(window.YoutubeAntiTranslate.getPlayerSelector()),
+  );
+
+  if (!player) {
     return;
   }
+  const playerResponse = await player.getPlayerResponse();
+  const tracks = await player.getAvailableAudioTracks();
+  const currentTrack = await player.getAudioTrack();
 
-  const tracks = player.getAvailableAudioTracks();
+  if (!playerResponse || !tracks || !currentTrack) {
+    return;
+  }
+  const currentVideoId = playerResponse.videoDetails.videoId;
+  if (
+    !currentVideoId ||
+    player.lastUntranslated === `${currentVideoId}+${currentTrack}`
+  ) {
+    return;
+  }
 
   const originalTrack = getOriginalTrack(tracks);
 
   if (originalTrack) {
-    player.setAudioTrack(originalTrack);
-    player.audioUntranslated = true;
+    // skip set if we alerady have the right track
+    if (`${originalTrack}` === `${currentTrack}`) {
+      if (player.lastUntranslated !== `${currentVideoId}+${currentTrack}`) {
+        // video id changed so still update the value
+        player.lastUntranslated = `${currentVideoId}+${originalTrack}`;
+      }
+      return;
+    }
+    const isAudioTrackSet = await player.setAudioTrack(originalTrack);
+    if (isAudioTrackSet) {
+      player.lastUntranslated = `${currentVideoId}+${originalTrack}`;
+    }
   }
 }
 
-function untranslate() {
-  if (mutationIdx % MUTATION_UPDATE_STEP == 0) {
-    untranslateAudioTrack();
+async function untranslate() {
+  if (mutationIdx % MUTATION_UPDATE_STEP === 0) {
+    await untranslateAudioTrack();
   }
   mutationIdx++;
 }
