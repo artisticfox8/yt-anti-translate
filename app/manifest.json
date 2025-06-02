@@ -4,12 +4,6 @@
   "version": "1.18.2",
   "description": "A small extension to disable YouTube video titles/audio/descriptions autotranslation.",
   "manifest_version": 3,
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "youtube-anti-translate-mv3@namakeingo.co.uk",
-      "strict_min_version": "109.0"
-    }
-  },
   "content_scripts": [
     {
       "matches": [
