@@ -3,8 +3,8 @@ Source code of [YouTube Anti Translate](https://addons.mozilla.org/en-US/firefox
 
 ## Release Notes:
 
-**Version 1.18.2**
-This long awaited update enables YouTube's translations to be removed from:
+### Version 1.18.2
+#### This long awaited update enables YouTube's translations to be removed from:
 - automatically dubbed audio tracks of videos 
 - video descriptions
 
@@ -16,14 +16,16 @@ The instant on/off toggle without full page reload was removed for now, but may 
 
 Incorporates fixes from namakeingo and his MV3 version. Thanks!
 
-**Version 1.5.14**
+### Version 1.5.14
 
 1. Updates to CSS selectors to work with YouTube
 2. Improves support for turning extension on and off without reloading the page (removes bugs)
 
 This release incorporates fixes from NetStranger. Thanks!
 
-**Version 1.5.7** mostly follows the upstream version, for example removes the description untranslation, because it was buggy.
+### Version 1.5.7
+
+Mostly follows the upstream version, for example removes the description untranslation, because it was buggy.
 It also adds support for turning the addon on and off without reloading.
 
 This fork for Firefox used to include a number of Firefox specific fixes in version 1.5.2, because that YouTube sent a different website HTML to Firefox and Chrome. Also the original idea of injecting the script to run in the page javascript namespace didn't work in Firefox reliably. That is why version 1.5.2 used a different mechanism to get to the ytInitialPlayerResponse javascript object on YT. 
