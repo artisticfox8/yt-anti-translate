@@ -2,6 +2,20 @@
 Source code of [YouTube Anti Translate](https://addons.mozilla.org/en-US/firefox/addon/youtube-anti-translate/?utm_source=github) for Firefox. Forked from https://github.com/zpix1/yt-anti-translate
 
 ## Release Notes:
+
+**Version 1.18.2**
+This long awaited update enables YouTube's translations to be removed from:
+- automatically dubbed audio tracks of videos 
+- video descriptions
+
+Also support on a channel's page was improved, now the channel name there is not translated (= YouTube Channel Branding Header and About untranslation).
+
+Switches to Manifest V3. 
+
+The instant on/off toggle without full page reload was removed for now, but may get added again, if there is interest.
+
+Incorporates fixes from namakeingo and his MV3 version. Thanks!
+
 **Version 1.5.14**
 
 1. Updates to CSS selectors to work with YouTube
@@ -42,7 +56,8 @@ When that is populated, some features work more reliably.
 Just install it from firefox extensions store (https://addons.mozilla.org/en-US/firefox/addon/youtube-anti-translate/?utm_source=github).
 
 ## DeArrow support
-**TLDR:** Needs to be handled better by original Chrome version authors, in my opinion. Then I'll add it.
+
+**TLDR:** Added the same way as in the Chrome version, but I still think it needs to be handled better by original Chrome version authors, due to the reasons highlighted below:
 
 **Longer explanation:**
 
