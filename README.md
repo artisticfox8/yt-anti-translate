@@ -3,6 +3,10 @@ Source code of [YouTube Anti Translate](https://addons.mozilla.org/en-US/firefox
 
 ## Release Notes:
 
+### Version 1.18.3
+
+- I Fixed main video title not being translated when navigating to YouTube from Google search results ([#45](https://github.com/zpix1/yt-anti-translate/issues/45))
+
 ### Version 1.18.2
 #### This long awaited update enables YouTube's translations to be removed from:
 - automatically dubbed audio tracks of videos 
