@@ -3,6 +3,25 @@ Source code of [YouTube Anti Translate](https://addons.mozilla.org/en-US/firefox
 
 ## Release Notes:
 
+### Version 1.18.4
+
+- Fix [#60](https://github.com/zpix1/yt-anti-translate/issues/60) Titles of playlists changed to the title of the first video on them
+
+Also brought some fixes from Chrome 1.18.3 version:
+
+- Fix compatibility with "Clickbait Remover for YouTube" for their "How to format titles" feature ([#41](https://github.com/zpix1/yt-anti-translate/issues/41))
+
+- Fix 404 on advertisement videos ([#48](https://github.com/zpix1/yt-anti-translate/issues/48))
+
+- Fix some issues in viewport/intersect logic
+
+- Fix channel branding header description not untranslating when window was smaller than 528px width
+
+- Fix videos in watch suggestions not untranslated by adding a new selector "yt-lockup-view-model" and way to handle it
+
+- Fix bug #49 - reload current page only if is youtube.com
+
+
 ### Version 1.18.3
 
 - I Fixed main video title not being translated when navigating to YouTube from Google search results ([#45](https://github.com/zpix1/yt-anti-translate/issues/45))

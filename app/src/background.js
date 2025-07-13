@@ -119,8 +119,7 @@ async function untranslateCurrentShortVideo() {
       if (
         realTitle &&
         currentTitle &&
-        window.YoutubeAntiTranslate.normalizeSpaces(realTitle) !==
-          window.YoutubeAntiTranslate.normalizeSpaces(currentTitle)
+        !window.YoutubeAntiTranslate.isStringEqual(realTitle, currentTitle)
       ) {
         window.YoutubeAntiTranslate.logInfo(
           `Untranslating Short title: "${currentTitle}" -> "${realTitle}"`,
@@ -130,7 +129,11 @@ async function untranslateCurrentShortVideo() {
 
         // Update page title too
         if (document.title.includes(currentTitle)) {
-          document.title = document.title.replace(currentTitle, realTitle);
+          document.title = window.YoutubeAntiTranslate.stringReplaceWithOptions(
+            document.title,
+            currentTitle,
+            realTitle,
+          );
         } else {
           // Fallback if exact match fails (e.g. " Shorts" suffix)
           document.title = `${realTitle} #shorts`; // Adjust format as needed
@@ -204,7 +207,7 @@ async function untranslateCurrentVideoFullScreenEdu() {
   const originalNodeSelector = `${window.YoutubeAntiTranslate.getPlayerSelector()} div.ytp-fullerscreen-edu-text:not(#${fakeNodeID})`;
 
   // Skip if on a channel page
-  if (document.location.pathname.startsWith("@")) {
+  if (document.location.pathname.startsWith("/@")) {
     return;
   }
 
@@ -280,6 +283,11 @@ async function createOrUpdateUntranslatedFakeNode(
       window.YoutubeAntiTranslate.stripNonEssentialParams(
         getUrl(translatedElement ?? fakeNode),
       );
+
+    // Ignore advertisement video
+    if (window.YoutubeAntiTranslate.isAdvertisementHref(getUrlForElement)) {
+      return;
+    }
     const response = await get(
       "https://www.youtube.com/oembed?url=" + getUrlForElement,
     );
@@ -302,23 +310,24 @@ async function createOrUpdateUntranslatedFakeNode(
           `${fakeNodeID}_${getUrlForElement}`,
         ) ?? oldTitle;
 
-      // document tile is sometimes not a perfect match to the oldTile due to spacing, so normalize all
-      const normalizedDocumentTitle =
-        window.YoutubeAntiTranslate.normalizeSpaces(document.title);
-      const normalizedOldTitle =
-        window.YoutubeAntiTranslate.normalizeSpaces(cachedOldTitle);
-      const normalizeRealTitle =
-        window.YoutubeAntiTranslate.normalizeSpaces(realTitle);
-      const realDocumentTitle = normalizedDocumentTitle.replace(
-        normalizedOldTitle,
-        normalizeRealTitle,
-      );
-      if (normalizedDocumentTitle !== realDocumentTitle) {
-        document.title = realDocumentTitle;
+      if (
+        !window.YoutubeAntiTranslate.isStringEqual(realTitle, cachedOldTitle)
+      ) {
+        document.title = window.YoutubeAntiTranslate.stringReplaceWithOptions(
+          document.title,
+          cachedOldTitle,
+          realTitle,
+        );
       }
     }
 
-    if (realTitle === oldTitle || fakeNode?.textContent === realTitle) {
+    if (
+      window.YoutubeAntiTranslate.isStringEqual(realTitle, oldTitle) ||
+      window.YoutubeAntiTranslate.isStringEqual(
+        fakeNode?.textContent,
+        realTitle,
+      )
+    ) {
       return;
     } else {
       // cache old title for future reference
@@ -390,15 +399,25 @@ async function untranslateOtherVideos(intersectElements = null) {
         if (!linkElement) {
           linkElement =
             video.querySelector("ytd-thumbnail a") ||
-            video.querySelector(`a[href*="/watch?v="]`);
+            // Ignore playlist links with list= parameter
+            video.querySelector(`a[href*="/watch?v="]:not([href*="list="])`);
         }
         if (!titleElement) {
-          titleElement = video.querySelector("yt-formatted-string#video-title");
+          titleElement =
+            video.querySelector("yt-formatted-string#video-title") ||
+            video.querySelector(
+              ".yt-lockup-metadata-view-model-wiz__title>.yt-core-attributed-string",
+            );
         }
         if (!linkElement || !titleElement) {
           // console.debug(`Skipping video item, missing link or title:`, video);
           continue; // Skip if essential elements aren't found
         }
+      }
+
+      // Ignore advertisement video
+      if (window.YoutubeAntiTranslate.isAdvertisementHref(linkElement.href)) {
+        continue;
       }
 
       // Use the link's href for oEmbed and as the key
@@ -424,8 +443,10 @@ async function untranslateOtherVideos(intersectElements = null) {
         if (
           originalTitle &&
           currentTitle &&
-          window.YoutubeAntiTranslate.normalizeSpaces(originalTitle) !==
-            window.YoutubeAntiTranslate.normalizeSpaces(currentTitle)
+          !window.YoutubeAntiTranslate.isStringEqual(
+            originalTitle,
+            currentTitle,
+          )
         ) {
           window.YoutubeAntiTranslate.logInfo(
             `Untranslating Video: "${currentTitle}" -> "${originalTitle}"`,
@@ -521,7 +542,11 @@ async function untranslateOtherShortsVideos(intersectElements = null) {
         const realTitle = response.title;
         const currentTitle = titleElement.textContent?.trim(); // Use textContent for typical title spans
 
-        if (realTitle && currentTitle && realTitle !== currentTitle) {
+        if (
+          realTitle &&
+          currentTitle &&
+          !window.YoutubeAntiTranslate.isStringEqual(realTitle, currentTitle)
+        ) {
           titleElement.textContent = realTitle;
           // Update title attribute if it exists (for tooltips)
           if (titleElement.hasAttribute("title")) {
