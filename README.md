@@ -3,6 +3,29 @@ Source code of [YouTube Anti Translate](https://addons.mozilla.org/en-US/firefox
 
 ## Release Notes:
 
+### Version 1.19.9.1
+
+#### New Features:
+
+- Mobile audio untranslation
+
+#### Fixes:
+
+- Fix [#101](https://github.com/zpix1/yt-anti-translate/issues/101) Video titles untranslation is slow and sequential
+
+#### And all fixes from 1.19.5, 1.19.6, 1.19.7, 1.19.8:
+
+- Fix [#84](https://github.com/zpix1/yt-anti-translate/issues/84) Channel titles in search are not always correctly untranslated
+- Fix [#85](https://github.com/zpix1/yt-anti-translate/issues/85) Video Titles inside of a Playlist are not untranslated on mobile
+- Fix [#86](https://github.com/zpix1/yt-anti-translate/issues/86) Channel Featured video title not untranslated on Mobile
+- Fix [#88](https://github.com/zpix1/yt-anti-translate/issues/88) Channel name above description not untranslated on Mobile
+- Fix issue where mobile description could be "untranslated" as the currently playing advert
+
+- Fix [#91](https://github.com/zpix1/yt-anti-translate/issues/91) Chapter untranslation not always working
+
+- Fix [#97](https://github.com/zpix1/yt-anti-translate/issues/97) video titles are not translated when oembed replies 401 on restricted video
+
+
 ### Version 1.19.4
 
 #### New features:
