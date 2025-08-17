@@ -3,6 +3,18 @@ Source code of [YouTube Anti Translate](https://addons.mozilla.org/en-US/firefox
 
 ## Release Notes:
 
+### Version 1.19.10
+
+#### New Feature
+
+- [#105](https://github.com/zpix1/yt-anti-translate/issues/105) Untranslate channel names on Collaborators pop-up
+
+#### Fixed
+
+- Fix [#106](https://github.com/zpix1/yt-anti-translate/issues/106) document title doesn't get untranslated when tab is backgrounded
+- Fix [#109](https://github.com/zpix1/yt-anti-translate/issues/109) issues with videos which are part of playlists, in video suggestions next to the video 
+- Fix [#108](https://github.com/zpix1/yt-anti-translate/issues/108) issues with title untranslating without player available
+
 ### Version 1.19.9.1
 
 #### New Features:
@@ -111,9 +123,12 @@ It is much easier to use than its analogues (such as [YoutubeAutotranslateCancel
 
 - Restores original video titles on YouTube (Title Anti-Translation)
 - Restores original video descriptions on YouTube (can be toggled in settings "Untranslate description")
+- Restores original video chapters
 - Disables automatic audio (dubbing) translation (can be toggled in settings "Untranslate audio track")
 - Restores original channel branding header and about on YouTube (can be toggled in settings "Untranslate channel branding")
+- Restores original channels' names almost everywhere
 - Untranslates YouTube Shorts audio and titles
+- Works on m.youtube.com too (some mobile features are still unsupported and/or experimental)
 - Works automatically without any configuration
 
 ### Enhanced Features Reliability Option
