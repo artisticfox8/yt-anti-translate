@@ -3,6 +3,14 @@ Source code of [YouTube Anti Translate](https://addons.mozilla.org/en-US/firefox
 
 ## Release Notes:
 
+### Version 1.19.12
+
+#### Fixed
+- [#122](https://github.com/zpix1/yt-anti-translate/issues/122) YouTube classes change
+
+##### From 1.19.11
+- [#117](https://github.com/zpix1/yt-anti-translate/issues/117) Untranslate channel branding unicode issue
+
 ### Version 1.19.10
 
 #### New Feature
