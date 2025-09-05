@@ -1,6 +1,6 @@
 // Support both desktop and mobile YouTube layouts
 const CHANNELBRANDING_HEADER_SELECTOR =
-  "#page-header-container #page-header .page-header-view-model-wiz__page-header-headline-info, .page-header-view-model-wiz__page-header-headline-info";
+  "#page-header-container #page-header .page-header-view-model-wiz__page-header-headline-info, .page-header-view-model-wiz__page-header-headline-info, .page-header-view-model__page-header-headline-info, .yt-page-header-view-model__page-header-headline-info, #page-header";
 const CHANNELBRANDING_ABOUT_SELECTOR =
   "ytd-engagement-panel-section-list-renderer, ytm-engagement-panel-section-list-renderer";
 const CHANNEL_LOCATION_REGEXES = [
@@ -16,6 +16,17 @@ const CHANNEL_LOCATION_REGEXES = [
  * @returns {string} channel UCID
  */
 async function lookupChannelId(query) {
+  if (!query) {
+    return null;
+  }
+
+  let decodedQuery;
+  try {
+    decodedQuery = decodeURIComponent(query);
+  } catch {
+    decodedQuery = query;
+  }
+
   // build the request body ──
   const body = {
     context: {
@@ -24,7 +35,7 @@ async function lookupChannelId(query) {
         clientVersion: "2.20250527.00.00",
       },
     },
-    query,
+    query: decodedQuery,
     // "EgIQAg==" = filter=channels  (protobuf: {12: {1:2}})
     params: "EgIQAg==",
   };
@@ -39,21 +50,22 @@ async function lookupChannelId(query) {
   }
 
   const search = "https://www.youtube.com/youtubei/v1/search?prettyPrint=false";
-  const res = await fetch(search, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  const result = await window.YoutubeAntiTranslate.cachedRequest(
+    search,
+    JSON.stringify(body),
+    { "content-type": "application/json" },
+    true,
+  );
 
-  if (!res.ok) {
+  if (!result || !result.response || !result.response.ok) {
     window.YoutubeAntiTranslate.logInfo(
       `Failed to fetch ${search}:`,
-      res.statusText,
+      result?.response?.statusText || "Unknown error",
     );
     return;
   }
 
-  const json = await res.json();
+  const json = result.data;
 
   const channelUcid =
     json.contents?.twoColumnSearchResultsRenderer?.primaryContents
@@ -380,17 +392,14 @@ function updateBrandingHeaderDescriptionContent(
 ) {
   if (originalBrandingData.description) {
     // Find the description text container
+    const selector = `yt-description-preview-view-model .yt-truncated-text__truncated-text-content > ${window.YoutubeAntiTranslate.CORE_ATTRIBUTED_STRING_SELECTOR}:nth-child(1), yt-description-preview-view-model .truncated-text-wiz__truncated-text-content > ${window.YoutubeAntiTranslate.CORE_ATTRIBUTED_STRING_SELECTOR}:nth-child(1)`;
 
-    let descriptionTextContainer = container.querySelector(
-      `yt-description-preview-view-model .truncated-text-wiz__truncated-text-content > ${window.YoutubeAntiTranslate.CORE_ATTRIBUTED_STRING_SELECTOR}:nth-child(1)`,
-    );
+    let descriptionTextContainer = container.querySelector(selector);
 
     // When width is lower than 528px the text container is outside the main container
     if (!descriptionTextContainer) {
       descriptionTextContainer = window.YoutubeAntiTranslate.getFirstVisible(
-        document.querySelector(
-          `yt-description-preview-view-model .truncated-text-wiz__truncated-text-content > ${window.YoutubeAntiTranslate.CORE_ATTRIBUTED_STRING_SELECTOR}:nth-child(1)`,
-        ),
+        document.querySelector(selector),
       );
     }
 
@@ -753,7 +762,7 @@ async function restoreCollaboratorsDialog() {
   }
 
   const listItems = dialog.querySelectorAll(
-    "yt-list-item-view-model.yt-list-item-view-model-wiz",
+    "yt-list-item-view-model .yt-list-item-view-model__text-wrapper",
   );
   if (!listItems || listItems.length === 0) {
     return;
@@ -767,7 +776,7 @@ async function restoreCollaboratorsDialog() {
     // Anchor that contains the channel name (bold title area)
     const linkEl =
       item.querySelector(
-        ".yt-list-item-view-model-wiz__title-wrapper a.yt-core-attributed-string__link",
+        ".yt-list-item-view-model__text-wrapper a.yt-core-attributed-string__link",
       ) || item.querySelector("a.yt-core-attributed-string__link");
     if (!linkEl) {
       return;
