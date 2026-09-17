@@ -3,6 +3,10 @@ Source code of [YouTube Anti Translate](https://addons.mozilla.org/en-US/firefox
 
 ## Release Notes:
 
+### Version 1.20.5
+
+- sync with Chrome version, all changes between 1.19.12 and 1.20.5
+
 ### Version 1.19.12
 
 #### Fixed
@@ -129,15 +133,23 @@ It is much easier to use than its analogues (such as [YoutubeAutotranslateCancel
 
 ## Features
 
-- Restores original video titles on YouTube (Title Anti-Translation)
+- Restores original video titles on YouTube (can be toggled in settings "Untranslate titles")
 - Restores original video descriptions on YouTube (can be toggled in settings "Untranslate description")
-- Restores original video chapters
+- Restores original video chapters (can be toggled in settings "Untranslate video chapters")
 - Disables automatic audio (dubbing) translation (can be toggled in settings "Untranslate audio track")
+- Restores original video thumbnails on YouTube (can be toggled in settings "Untranslate video thumbnails")
 - Restores original channel branding header and about on YouTube (can be toggled in settings "Untranslate channel branding")
-- Restores original channels' names almost everywhere
+- Restores original channels' names everywhere else
 - Untranslates YouTube Shorts audio and titles
 - Works on m.youtube.com too (some mobile features are still unsupported and/or experimental)
+- Works on youtube-nocookie.com
+- Works on embeded YouTube videos
 - Works automatically without any configuration
+- "Advanced Settings" to allow translations for specified channels (using the @ handle of any channel)
+
+> [!WARNING]
+> For compatibility with [DeArrow](https://github.com/ajayyy/DeArrow) it is recommended do disable "Untranslate titles" and "Untranslate video thumbnails".
+> You can then use [DeArrow](https://github.com/ajayyy/DeArrow)'s options page, under "Behavior" menu section, and enable "Default to Original Video Information" to still have translated titles and thumbnail from [DeArrow](https://github.com/ajayyy/DeArrow).
 
 ### Enhanced Features Reliability Option
 
@@ -147,11 +159,27 @@ When that is populated, some features work more reliably.
 [Read more on how to obtain](https://github.com/zpix1/yt-anti-translate/blob/main/YOUTUBE_DATA_API_KEY.md)
 
 ## How to use
-Just install it from firefox extensions store (https://addons.mozilla.org/en-US/firefox/addon/youtube-anti-translate/?utm_source=github).
+Just install it from Firefox extensions store (https://addons.mozilla.org/en-US/firefox/addon/youtube-anti-translate/?utm_source=github).
+
+## How to test
+
+1. Clone this repository
+2. Navigate to the cloned folder and run the following command in a terminal window
+   `npm ci`
+3. Open with the IDE editor of choice
+4. You can verify functionality by running Playwright Test (make sure you install Playwright extensions for your IDE if needed)
+   - Before running the tests, you will need to install playwright browsers and dependencies
+     `npx playwright install --with-deps`
+   - Please create or update tests if adding new capabilities
+   - For running tests on your machine you need a `.env` file with values for `GOOGLE_USER`, `GOOGLE_PWD` and `GOOGLE_OTP_SECRET`.
+     > [!NOTE]
+     > These `.env` values should be valid credentials to a Google (YouTube) Account with 2FA OTP enabled and OTP as the highest level of security on the account (aka no "Google prompt" or "Passkeys and security keys" configured).
+     > `GOOGLE_OTP_SECRET` is the "secret" query parameter of the QR Code that is provided when configuring the 2FA OTP Authenticathor. You can use a QR Code reader to read the text value.
+     > It is recommended that you create a test account for this purpose.
 
 ## DeArrow support
 
-**TLDR:** Added the same way as in the Chrome version, but I still think it needs to be handled better by original Chrome version authors, due to the reasons highlighted below:
+**TLDR:** Added the same way as in the Chrome version, but I still think it needs to be handled better by original Chrome version authors, due to the reasons highlighted below (**may be outdated**):
 
 **Longer explanation:**
 
@@ -185,3 +213,20 @@ So, this may be a timing bug. If DeArrow runs after YT Anti Translate has run, a
 
 
 The page in question: https://www.youtube.com/watch?v=w26hmoyLbJ0 (old Pewdiepie video, which the https://www.youtube.com/watch?v=EC7gdOUvsAc video in screenshot appears as a recommendation to) and YT language changed to Russian (same config as original author of the Chrome extension). Good combination for testing, as his videos from 2018-19 mostly all have a translated title.
+You can also show your support by:
+
+- Starring this repository on GitHub
+- Submitting a positive review for the extension on the [Chrome Web Store](https://chrome.google.com/webstore/detail/yt-anti-translate/ndpmhjnlfkgfalaieeneneenijondgag)
+- Submitting a positive review for the extension on the [Firefox Extension Store](https://addons.mozilla.org/firefox/addon/youtube-anti-translate-mv3/)
+
+### Contributors
+
+- [namakeingo](https://github.com/namakeingo) - Collaborator and Main Maintainer - Firefox MV3 Developer
+  - [Donate to namakeingo](https://github.com/sponsors/namakeingo)
+  - Star the fork [namakeingo/yt-anti-translate-firefox](https://github.com/namakeingo/yt-anti-translate-firefox)
+- [artisticfox8](https://github.com/artisticfox8/yt-anti-translate) - Firefox MV3 Developer
+  - Star the fork [artisticfox8/yt-anti-translate](https://github.com/artisticfox8/yt-anti-translate)
+- [ajayyy](https://github.com/ayayyy) - DeArrow compatibility [#18](https://github.com/zpix1/yt-anti-translate/pull/18) & [#20](https://github.com/zpix1/yt-anti-translate/pull/20)
+- [YuriiMaiboroda](https://github.com/YuriiMaiboroda) - Fix translating for playlist panel [#14](https://github.com/zpix1/yt-anti-translate/pull/14)
+- [BlackLanzer](https://github.com/BlackLanzer) - Translate title attribute [#24](https://github.com/zpix1/yt-anti-translate/pull/24)
+- [NRngnl](https://github.com/NRngnl) - Replace 'chrome.extension.getURL' with 'chrome.runtime.getURL' [#12](https://github.com/zpix1/yt-anti-translate/pull/12)

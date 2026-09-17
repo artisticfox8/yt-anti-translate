@@ -5,13 +5,125 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## Unreleased
+
+## [1.20.5] - 2026-09-04
+
+### Fixed
+
+- Fix [#190](https://github.com/zpix1/yt-anti-translate/issues/190) untranslated title not appearing in the Shorts player
+- Fix [#191](https://github.com/zpix1/yt-anti-translate/issues/191) low-resolution thumbnail in the paused video player
+- Untranslate linked video titles in the Shorts carousel, including their accessible labels
+
+## [1.20.4.4] - 2026-04-30
+
+### Fixed
+
+- Fix [#179](https://github.com/zpix1/yt-anti-translate/issues/179) chapters not visible bug
+- Fix mobile selectors for YouTube's camelCase attributed string classes
+
+## [1.20.4.3] - 2026-04-20
+
+### Fixed
+
+- Fix [#177](https://github.com/zpix1/yt-anti-translate/issues/177) profile link styling in video descriptions
+
+## [1.20.4.2] - 2026-04-11
+
+### Fixed
+
+- YouTube changed classes: updated them
+
+## [1.20.4] - 2026-04-08
+
+### New Feature
+
+- Untranslate chapters on mobile
+- Subtitles untranslate feature
+
+### Fixed
+
+- Fix [#171](https://github.com/zpix1/yt-anti-translate/issues/171)
+- Fix [#170](https://github.com/zpix1/yt-anti-translate/issues/170)
+
+## [1.20.3.1] - 2025-11-01
+
+- Performance fixes
+
+## [1.20.3] - 2025-10-21
+
+### New Feature
+
+- [#149](https://github.com/zpix1/yt-anti-translate/issues/149) Untranslate auto-play (autonav) video inside the player
+
+### Fixed
+
+- Fix [#148](https://github.com/zpix1/yt-anti-translate/issues/148) The mobile video thumbnail in a playlist are set to the first
+- Fix [#151](https://github.com/zpix1/yt-anti-translate/issues/151) searchbar error (polluted search history)
+- Fix [#120](https://github.com/zpix1/yt-anti-translate/issues/120) Chapters tooltip not untranslated in Brave Browser
+- Add some new youtube video selectors
+- Fix channel branding whitelist on search page
+
+## [1.20.1] - 2025-10-14
+
+### Fixed
+
+- Fix [#144](https://github.com/zpix1/yt-anti-translate/issues/144) YouTube links in descriptions are translated
+- Fix [#145](https://github.com/zpix1/yt-anti-translate/issues/145) "Manage whitelists" cannot be opened on mobile browser
+
+## [1.20.0] - 2025-10-13
+
+### New Feature
+
+- Add YouTube Mini Player untranslation
+- [#114](https://github.com/zpix1/yt-anti-translate/issues/114) Thumbnails Untranslate
+- [#135](https://github.com/zpix1/yt-anti-translate/issues/135) Untranslate Collaborator authors on everywhere
+- [#119](https://github.com/zpix1/yt-anti-translate/issues/119) Untranslate Embeded videos outside of YouTube (e.g. On filmot.com) - iFrame support
+- [#57](https://github.com/zpix1/yt-anti-translate/issues/57) Add support for youtube-nocookie.com
+- [#138](https://github.com/zpix1/yt-anti-translate/issues/138) Add option to toggle Titles Untranslation
+- [#55](https://github.com/zpix1/yt-anti-translate/issues/55) Whitelist channels to allow translations/dubbing - Advanced Settings
+
+### Fixed
+
+- Fix [#137](https://github.com/zpix1/yt-anti-translate/issues/137) Videos description in searches sometimes shows older videos description
+- Add missing selector to handle branding of feutured channels and sidebar channels
+- Fix video description not translating of fundraising videos if viewport is below 1000x500
+- Added missing selector to handle description of dismissable featured channel video
+
+## [1.19.13.1] - 2025-10-09
+
+### Fixed
+
+- Fix [#60](https://github.com/zpix1/yt-anti-translate/issues/60#issuecomment-3316129585) Titles of playlists changed to the title of the first video on them. (only on `/feed/you` and `/feed/playlists`)
+
+## [1.19.13] - 2025-09-20
+
+### New Feature
+
+- [#66](https://github.com/zpix1/yt-anti-translate/issues/66) Untranslate End Screen Mosaic inside the Player
+
+### Fixed
+
+- Fix video author translation on videos with multiple authors
+- Fix author search result untranslation
+- Fix `isVisible` function when any of the parents is invisible
+- Fix [#116](https://github.com/zpix1/yt-anti-translate/issues/116) Unnecessary error 404 network calls to YT oembed API
+- Fix [#124](https://github.com/zpix1/yt-anti-translate/issues/124) Incompatible with 'No YouTube Shorts'
+- Fix [#115](https://github.com/zpix1/yt-anti-translate/issues/115) Title duplication when videos with similar titles watched one immediatly after another
+- Fix [#128](https://github.com/zpix1/yt-anti-translate/issues/128) Shorts Untranslation is unreliable
+- Fix [#132](https://github.com/zpix1/yt-anti-translate/issues/132)
+- Handle short player description
+- Handle fallback to title inside of description
 
 ## [1.19.12] - 2025-08-29
+
+### Fixed
 
 - [#122](https://github.com/zpix1/yt-anti-translate/issues/122) YouTube classes change
 
 ## [1.19.11] - 2025-08-20
+
+### Fixed
 
 - [#117](https://github.com/zpix1/yt-anti-translate/issues/117) Untranslate channel branding unicode issue
 

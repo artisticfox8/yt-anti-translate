@@ -2,16 +2,29 @@
 chrome.storage.sync.get(
   {
     disabled: false,
+    untranslateTitle: true,
     untranslateAudio: true,
     untranslateDescription: true,
+    untranslateChapters: true,
+    untranslateChannelBranding: true,
     untranslateNotification: true,
+    untranslateThumbnail: true,
+    subtitlesLanguage: "original",
+    subtitlesEnabled: false,
   },
   async function (items) {
     if (!items.disabled) {
-      const backgroundScript = document.createElement("script");
-      backgroundScript.type = "module";
-      backgroundScript.src = chrome.runtime.getURL("src/background.js");
-      document.body.appendChild(backgroundScript);
+      if (
+        items.untranslateTitle ||
+        items.untranslateDescription ||
+        items.untranslateChannelBranding ||
+        items.untranslateThumbnail
+      ) {
+        const backgroundScript = document.createElement("script");
+        backgroundScript.type = "module";
+        backgroundScript.src = chrome.runtime.getURL("src/background.js");
+        document.body.appendChild(backgroundScript);
+      }
 
       // Inject notification title handler if enabled
       if (items.untranslateNotification) {
@@ -32,7 +45,11 @@ chrome.storage.sync.get(
         document.body.appendChild(backgroundAudioScript);
       }
 
-      if (items.untranslateDescription) {
+      if (
+        items.untranslateDescription ||
+        items.untranslateChapters ||
+        items.untranslateChannelBranding
+      ) {
         const descriptionScript = document.createElement("script");
         descriptionScript.type = "module";
         descriptionScript.src = chrome.runtime.getURL(
@@ -40,6 +57,23 @@ chrome.storage.sync.get(
         );
         document.body.appendChild(descriptionScript);
       }
+
+      if (items.subtitlesEnabled) {
+        const subtitlesScript = document.createElement("script");
+        subtitlesScript.type = "module";
+        subtitlesScript.src = chrome.runtime.getURL(
+          "src/background_subtitles.js",
+        );
+        document.body.appendChild(subtitlesScript);
+      }
     }
   },
 );
+
+// Listen for reload messages from the extension popup
+// This is needed to reload the pages that are inside iFrames
+chrome.runtime.onMessage.addListener((message) => {
+  if (message && message.type === "reload") {
+    window.location.reload();
+  }
+});

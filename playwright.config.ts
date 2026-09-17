@@ -16,16 +16,17 @@ export const test = base.extend<TestOptions>({
 });
 
 export default defineConfig<TestOptions>({
-  timeout: 2 * 60 * 1000,
+  globalTimeout: 20 * 60 * 1000,
+  timeout: 3 * 60 * 1000,
   testDir: "./tests",
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry 3 times on CI, or once locally */
-  retries: process.env.CI ? 3 : 1,
+  retries: process.env.CI ? 5 : 1,
   /* Limit parallel workers on CI as they cause random failures some of the times */
-  workers: process.env.CI ? 2 : undefined,
+  workers: 3,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [["github"], ["html"]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -40,13 +41,15 @@ export default defineConfig<TestOptions>({
   /* Configure projects for major browsers */
   projects: [
     {
-      name: "setup-auth-and-ublock",
-      testMatch: /.*setup\.spec\.ts/,
+      name: "setup-ublock",
+      testMatch: /.*ublock\.setup\.spec\.ts/,
       use: {
         allBrowserNameWithExtensions: ["chromium", "firefox"],
-        allLocaleStrings: ["ru-RU", "th-TH"],
+        actionTimeout: process.env.CI ? 60_000 : 30_000,
+        navigationTimeout: process.env.CI ? 60_000 : 30_000,
       },
     },
+    // Desktop Chrome
     {
       name: "chromium-extension-ru-RU",
       testMatch: /.*extension\.spec\.ts/,
@@ -54,6 +57,7 @@ export default defineConfig<TestOptions>({
         browserNameWithExtensions: "chromium",
         localeString: "ru-RU",
         ...devices["Desktop Chrome"],
+        isMobile: false,
         contextOptions: {
           // Load the extension from the app directory
           permissions: ["clipboard-read", "clipboard-write"],
@@ -62,23 +66,10 @@ export default defineConfig<TestOptions>({
           args: ["--headless=new"],
         },
         locale: "ru-RU",
+        actionTimeout: process.env.CI ? 60_000 : 30_000,
+        navigationTimeout: process.env.CI ? 60_000 : 30_000,
       },
-      dependencies: ["setup-auth-and-ublock"],
-    },
-    {
-      name: "firefox-extension-ru-RU",
-      testMatch: /.*extension\.spec\.ts/,
-      use: {
-        browserNameWithExtensions: "firefox",
-        localeString: "ru-RU",
-        ...devices["Desktop Firefox"],
-        contextOptions: {},
-        launchOptions: {
-          args: ["--headless=new"],
-        },
-        locale: "ru-RU",
-      },
-      dependencies: ["setup-auth-and-ublock"],
+      dependencies: ["setup-ublock"],
     },
     {
       name: "chromium-extension-extra-th-TH",
@@ -87,6 +78,7 @@ export default defineConfig<TestOptions>({
         browserNameWithExtensions: "chromium",
         localeString: "th-TH",
         ...devices["Desktop Chrome"],
+        isMobile: false,
         contextOptions: {
           // Load the extension from the app directory
           permissions: ["clipboard-read", "clipboard-write"],
@@ -95,8 +87,30 @@ export default defineConfig<TestOptions>({
           args: ["--headless=new"],
         },
         locale: "th-TH",
+        actionTimeout: process.env.CI ? 60_000 : 30_000,
+        navigationTimeout: process.env.CI ? 60_000 : 30_000,
       },
-      dependencies: ["setup-auth-and-ublock"],
+      dependencies: ["setup-ublock"],
+    },
+
+    // Desktop Firefox
+    {
+      name: "firefox-extension-ru-RU",
+      testMatch: /.*extension\.spec\.ts/,
+      use: {
+        browserNameWithExtensions: "firefox",
+        localeString: "ru-RU",
+        ...devices["Desktop Firefox"],
+        isMobile: false,
+        contextOptions: {},
+        launchOptions: {
+          args: ["--headless=new"],
+        },
+        locale: "ru-RU",
+        actionTimeout: process.env.CI ? 60_000 : 30_000,
+        navigationTimeout: process.env.CI ? 60_000 : 30_000,
+      },
+      dependencies: ["setup-ublock"],
     },
     {
       name: "firefox-extension-extra-th-TH",
@@ -105,14 +119,19 @@ export default defineConfig<TestOptions>({
         browserNameWithExtensions: "firefox",
         localeString: "th-TH",
         ...devices["Desktop Firefox"],
+        isMobile: false,
         contextOptions: {},
         launchOptions: {
           args: ["--headless=new"],
         },
         locale: "th-TH",
+        actionTimeout: process.env.CI ? 60_000 : 30_000,
+        navigationTimeout: process.env.CI ? 60_000 : 30_000,
       },
-      dependencies: ["setup-auth-and-ublock"],
+      dependencies: ["setup-ublock"],
     },
+
+    // Mobile Chrome
     {
       name: "chromium-extension-mobile-ru-RU",
       testMatch: /.*extension-mobile\.spec\.ts/,
@@ -120,6 +139,7 @@ export default defineConfig<TestOptions>({
         browserNameWithExtensions: "chromium",
         localeString: "ru-RU",
         ...devices["Pixel 5"],
+        isMobile: true,
         contextOptions: {
           permissions: ["clipboard-read", "clipboard-write"],
         },
@@ -127,16 +147,19 @@ export default defineConfig<TestOptions>({
           args: ["--headless=new"],
         },
         locale: "ru-RU",
+        actionTimeout: process.env.CI ? 60_000 : 30_000,
+        navigationTimeout: process.env.CI ? 60_000 : 30_000,
       },
-      dependencies: ["setup-auth-and-ublock"],
+      dependencies: ["setup-ublock"],
     },
     {
       name: "chromium-extension-mobile-extra-th-TH",
       testMatch: /.*extension-mobile\.extra\.spec\.ts/,
       use: {
         browserNameWithExtensions: "chromium",
-        localeString: "ru-RU",
+        localeString: "th-TH",
         ...devices["Pixel 5"],
+        isMobile: true,
         contextOptions: {
           permissions: ["clipboard-read", "clipboard-write"],
         },
@@ -144,8 +167,10 @@ export default defineConfig<TestOptions>({
           args: ["--headless=new"],
         },
         locale: "th-TH",
+        actionTimeout: process.env.CI ? 60_000 : 30_000,
+        navigationTimeout: process.env.CI ? 60_000 : 30_000,
       },
-      dependencies: ["setup-auth-and-ublock"],
+      dependencies: ["setup-ublock"],
     },
   ],
 });
